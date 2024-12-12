@@ -31,12 +31,12 @@ def count_pages():
 
             num_pages = process_pdf(file_path)
             if num_pages > 0:
-                result_text += f"Selected file: {filename}<br>"
-                result_text += f'The PDF file has {num_pages} pages. <br>'
+                result_text += f"Selected file: {filename}\n"
+                result_text += f'The PDF file has {num_pages} pages.'
             else:
-                result_text += f"Could not read the file: {filename}. <br>"
+                result_text += f"Could not read the file: {filename}.\n"
         except Exception as e:
-            result_text += f"An error occurred with the file: {file.filename}. Error: {e}<br>"
+            result_text += f"An error occurred with the file: {file.filename}. Error: {e}\n"
 
     flash(result_text)
     return redirect(url_for('index'))
@@ -57,11 +57,18 @@ def rotate_page():
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(file_path)
 
-        rotated_file_path = rotate_pdf(file_path, rotation_angle, pageno)
-        flash(f"Page {pageno + 1} of the PDF file has been rotated by {rotation_angle} degrees. Saved as {rotated_file_path}")
+        rotated_pdf_stream = rotate_pdf_to_stream(file_path, rotation_angle, pageno)
+
+        # Return the rotated PDF as a file download
+        return send_file(
+            rotated_pdf_stream,
+            as_attachment=True,
+            download_name=f"rotated_{filename}",
+            mimetype="application/pdf"
+        )
     except Exception as e:
         flash(f"An error occurred: {str(e)}")
-    return redirect(url_for('index'))
+        return redirect(url_for('index'))
 
 @app.route('/merge_pdfs', methods=['POST'])
 def merge_pdfs():
@@ -101,22 +108,26 @@ def process_pdf(file_path):
         print(f"Error processing PDF file: {file_path}. Error: {e}")
         return 0
 
-def rotate_pdf(file_path, angle, pageno):
-    with open(file_path, 'rb') as f:
-        pdf = PyPDF2.PdfReader(f)
-        output_pdf = PyPDF2.PdfWriter()
+def rotate_pdf_to_stream(file_path, angle, pageno):
+    try:
+        with open(file_path, 'rb') as f:
+            pdf = PyPDF2.PdfReader(f)
+            output_pdf = PyPDF2.PdfWriter()
+            
+            for page_num in range(len(pdf.pages)):
+                page = pdf.pages[page_num]
+                if page_num == pageno:
+                    page.rotate(angle)
+                output_pdf.add_page(page)
 
-        for page_num in range(len(pdf.pages)):
-            page = pdf.pages[page_num]
-            if page_num == pageno:
-                page.rotate(angle)
-            output_pdf.add_page(page)
-
-        rotated_file_path = file_path.replace(".pdf", f"_rotated_{angle}_page_{pageno + 1}.pdf")
-        with open(rotated_file_path, 'wb') as out_f:
-            output_pdf.write(out_f)
-
-        return rotated_file_path
+            # Save the rotated PDF to an in-memory stream
+            output_stream = io.BytesIO()
+            output_pdf.write(output_stream)
+            output_stream.seek(0)
+            return output_stream
+    except Exception as e:
+        print(f"Error rotating PDF: {file_path}. Error: {e}")
+        raise
 
 def merge_pdfs_to_stream(file_paths):
     output_pdf = PyPDF2.PdfWriter()
