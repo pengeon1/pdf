@@ -32,9 +32,9 @@ def count_pages():
             num_pages = process_pdf(file_path)
             if num_pages > 0:
                 result_text += f"Selected file: {filename}<br>"
-                result_text += f'The PDF file has {num_pages} pages.<br>'
+                result_text += f'The PDF file has {num_pages} pages. <br>'
             else:
-                result_text += f"Could not read the file: {filename}.<br>"
+                result_text += f"Could not read the file: {filename}. <br>"
         except Exception as e:
             result_text += f"An error occurred with the file: {file.filename}. Error: {e}<br>"
 
