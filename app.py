@@ -6,7 +6,7 @@ import PyPDF2
 import io
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "https://iiitdm-dashboard.vercel.app/"}})
 app.secret_key = "supersecretkey"
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
 
