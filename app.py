@@ -4,10 +4,6 @@ import os
 from io import BytesIO
 
 app = Flask(__name__)
-UPLOAD_FOLDER = 'uploads/pdfs/'
-MERGED_FOLDER = 'merged_pdfs/'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(MERGED_FOLDER, exist_ok=True)
 
 # Route to serve the index.html
 @app.route('/')
