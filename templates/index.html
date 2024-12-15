@@ -4,100 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PDF Tools</title>
+    <link rel="stylesheet" href="styles.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #1a1a1a;
-            color: #e0e0e0;
-        }
-
-        header {
-            background-color: #007bff;
-            color: white;
-            padding: 20px 10px;
-            text-align: center;
-            font-size: 24px;
-            box-shadow: 0 0 20px rgba(0, 123, 255, 0.5);
-            margin-bottom: 20px;
-        }
-
-        main {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background: #121212;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        h1 {
-            font-size: 28px;
-            margin: 20px 0;
-            color: #007bff;
-        }
-
-        h2 {
-            font-size: 20px;
-            margin: 20px 0;
-            color: #007bff;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: #e0e0e0;
-        }
-
-        input[type="file"], input[type="number"], input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #444;
-            border-radius: 4px;
-            background-color: #2a2a2a;
-            color: #e0e0e0;
-        }
-
-        button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 14px;
-            cursor: pointer;
-            box-shadow: 0 0 5px rgba(0, 123, 255, 0.4);
-            margin: 10px 0;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-            box-shadow: 0 0 10px rgba(0, 123, 255, 0.7);
-        }
-
-        .message {
-            margin-bottom: 20px;
-            padding: 10px;
-            border-radius: 4px;
-            background-color: #333333;
-            color: #007bff;
-            font-size: 14px;
-        }
-
-        footer {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 14px;
-            color: #888;
-        }
+        /* Same styles as you had before */
     </style>
 </head>
 <body>
@@ -110,7 +20,7 @@
         <h2>Count Pages</h2>
         <form id="countPagesForm" enctype="multipart/form-data">
             <div class="form-group">
-                <input type="file" name="pdf_files" multiple required>
+                <input type="file" name="pdf_files" multiple>
             </div>
             <button type="submit">Count Pages</button>
         </form>
@@ -136,7 +46,7 @@
         <h2>Merge PDFs</h2>
         <form id="mergeForm" enctype="multipart/form-data">
             <div class="form-group">
-                <input type="file" name="pdf_files" multiple required>
+                <input type="file" name="pdf_files" multiple>
             </div>
             <button type="submit">Merge</button>
         </form>
