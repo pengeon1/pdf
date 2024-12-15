@@ -1,13 +1,15 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import os
 import PyPDF2
 import io
 
 app = Flask(__name__)
+CORS(app)
 app.secret_key = "supersecretkey"
+app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
 
-# Use the /tmp directory for temporary storage in a serverless environment
 app.config['UPLOAD_FOLDER'] = '/tmp/uploads/'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -22,7 +24,7 @@ def count_pages():
         flash('No files selected')
         return redirect(url_for('index'))
 
-    result_text = ""
+    result_texts = []
     for file in files:
         try:
             filename = secure_filename(file.filename)
@@ -31,16 +33,14 @@ def count_pages():
 
             num_pages = process_pdf(file_path)
             if num_pages > 0:
-                result_text += f"Selected file: {filename}\n"
-                result_text += f'The PDF file has {num_pages} pages.'
+                result_texts.append(f"Selected file: {filename}<br>The PDF file has {num_pages} pages.<br>")
             else:
-                result_text += f"Could not read the file: {filename}.\n"
+                result_texts.append(f"Could not read the file: {filename}.<br>")
         except Exception as e:
-            result_text += f"An error occurred with the file: {file.filename}. Error: {e}\n"
+            result_texts.append(f"An error occurred with the file: {file.filename}. Error: {e}<br>")
 
-    flash(result_text)
+    flash("".join(result_texts))
     return redirect(url_for('index'))
-
 
 @app.route('/rotate_page', methods=['POST'])
 def rotate_page():
@@ -58,8 +58,6 @@ def rotate_page():
         file.save(file_path)
 
         rotated_pdf_stream = rotate_pdf_to_stream(file_path, rotation_angle, pageno)
-
-        # Return the rotated PDF as a file download
         return send_file(
             rotated_pdf_stream,
             as_attachment=True,
@@ -87,7 +85,6 @@ def merge_pdfs():
 
         merged_pdf_stream = merge_pdfs_to_stream(file_paths)
 
-        # Return the merged PDF as a file download
         return send_file(
             merged_pdf_stream,
             as_attachment=True,
@@ -119,8 +116,6 @@ def rotate_pdf_to_stream(file_path, angle, pageno):
                 if page_num == pageno:
                     page.rotate(angle)
                 output_pdf.add_page(page)
-
-            # Save the rotated PDF to an in-memory stream
             output_stream = io.BytesIO()
             output_pdf.write(output_stream)
             output_stream.seek(0)
@@ -143,6 +138,5 @@ def merge_pdfs_to_stream(file_paths):
     output_stream.seek(0)
     return output_stream
 
-# Expose the app callable for Vercel
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
