@@ -3,132 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Tools</title>
+    <title>PDF Utilities</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        /* Your existing CSS styles */
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h1 { color: #333; }
+        .container { margin-top: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .output { margin-top: 20px; }
+        .file-input { margin-bottom: 10px; }
+        .btn { padding: 10px 15px; background-color: #007bff; color: white; border: none; cursor: pointer; }
+        .btn:hover { background-color: #0056b3; }
     </style>
 </head>
 <body>
-    <header>
-        PDF Tools
-    </header>
-    <main>
-        <h1>Work with your PDFs here!</h1>
+    <h1>PDF Utilities</h1>
+    <div class="container">
+        <div class="form-group">
+            <h3>Count Pages</h3>
+            <input type="file" id="count-pages-file" class="file-input" />
+            <button class="btn" onclick="countPages()">Count Pages</button>
+            <div id="page-count-result"></div>
+        </div>
 
-        <h2>Count Pages</h2>
-        <form id="countPagesForm" enctype="multipart/form-data">
-            <div class="form-group">
-                <input type="file" name="pdf_files" multiple>
-            </div>
-            <button type="submit">Count Pages</button>
-        </form>
-        <div id="countResult" class="message" style="display:none;"></div>
+        <div class="form-group">
+            <h3>Rotate Pages</h3>
+            <input type="file" id="rotate-pages-file" class="file-input" />
+            <input type="text" id="pages-to-rotate" placeholder="Pages to rotate (comma-separated)" />
+            <input type="number" id="rotation-degree" placeholder="Rotation degree (90, 180, 270)" />
+            <button class="btn" onclick="rotatePages()">Rotate Pages</button>
+            <div id="rotate-result"></div>
+        </div>
 
-        <h2>Rotate Pages</h2>
-        <form id="rotateForm" enctype="multipart/form-data">
-            <div class="form-group">
-                <input type="file" name="pdf_file" required>
-            </div>
-            <div class="form-group">
-                <label for="angle">Enter Rotation Angle</label>
-                <input type="number" name="angle" required>
-            </div>
-            <div class="form-group">
-                <label for="pages">Pages to Rotate (e.g., 1,2,3-5)</label>
-                <input type="text" name="pages" required>
-            </div>
-            <button type="submit">Rotate</button>
-        </form>
-        <div id="rotateResult" class="message" style="display:none;"></div>
-
-        <h2>Merge PDFs</h2>
-        <form id="mergeForm" enctype="multipart/form-data">
-            <div class="form-group">
-                <input type="file" name="pdf_files" multiple>
-            </div>
-            <button type="submit">Merge</button>
-        </form>
-        <div id="mergeResult" class="message" style="display:none;"></div>
-    </main>
-    <footer>
-        &copy; PDF Tools! All rights reserved :)
-    </footer>
+        <div class="form-group">
+            <h3>Merge PDFs</h3>
+            <input type="file" id="merge-pdfs-file" class="file-input" multiple />
+            <input type="text" id="output-filename" placeholder="Output Filename" />
+            <button class="btn" onclick="mergePdfs()">Merge PDFs</button>
+            <div id="merge-result"></div>
+        </div>
+    </div>
 
     <script>
-        $(document).ready(function() {
-            // Handle count pages
-            $('#countPagesForm').submit(function(e) {
-                e.preventDefault();
-                let formData = new FormData(this);
-                $('#countResult').hide();
-                $.ajax({
-                    url: '/count_pages',
-                    type: 'POST',
-                    data: formData,
-                    contentType: false,
-                    processData: false,
-                    success: function(response) {
-                        let message = '';
-                        if (response.results && response.results.length > 0) {
-                            message = response.results.join('<br>');
-                        }
-                        $('#countResult').html(message).show();
-                    },
-                    error: function(response) {
-                        $('#countResult').html('Error: ' + response.responseJSON.error).show();
-                    }
-                });
-            });
+        // Function to handle counting pages
+        function countPages() {
+            const file = document.getElementById('count-pages-file').files[0];
+            if (!file) return alert("Please select a PDF file");
 
-            // Handle rotate pages
-            $('#rotateForm').submit(function(e) {
-                e.preventDefault();
-                let formData = new FormData(this);
-                $('#rotateResult').hide();
-                $.ajax({
-                    url: '/rotate_page',
-                    type: 'POST',
-                    data: formData,
-                    contentType: false,
-                    processData: false,
-                    success: function(response) {
-                        const blob = new Blob([response.data], { type: 'application/pdf' });
-                        const link = document.createElement('a');
-                        link.href = URL.createObjectURL(blob);
-                        link.download = 'rotated_output.pdf';
-                        link.click();
-                    },
-                    error: function(response) {
-                        $('#rotateResult').html('Error: ' + response.responseJSON.error).show();
-                    }
-                });
-            });
+            const formData = new FormData();
+            formData.append("pdf_file", file);
 
-            // Handle merge PDFs
-            $('#mergeForm').submit(function(e) {
-                e.preventDefault();
-                let formData = new FormData(this);
-                $('#mergeResult').hide();
-                $.ajax({
-                    url: '/merge_pdfs',
-                    type: 'POST',
-                    data: formData,
-                    contentType: false,
-                    processData: false,
-                    success: function(response) {
-                        const blob = new Blob([response.data], { type: 'application/pdf' });
-                        const link = document.createElement('a');
-                        link.href = URL.createObjectURL(blob);
-                        link.download = 'merged_output.pdf';
-                        link.click();
-                    },
-                    error: function(response) {
-                        $('#mergeResult').html('Error: ' + response.responseJSON.error).show();
-                    }
-                });
+            $.ajax({
+                url: "/count_pages",
+                type: "POST",
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    $('#page-count-result').html(response);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
             });
-        });
+        }
+
+        // Function to handle rotating pages
+        function rotatePages() {
+            const file = document.getElementById('rotate-pages-file').files[0];
+            const pagesToRotate = document.getElementById('pages-to-rotate').value;
+            const rotationDegree = document.getElementById('rotation-degree').value;
+
+            if (!file || !pagesToRotate || !rotationDegree) {
+                return alert("Please fill in all fields");
+            }
+
+            const formData = new FormData();
+            formData.append("pdf_file", file);
+            formData.append("pages_to_rotate", pagesToRotate);
+            formData.append("rotation_degree", rotationDegree);
+
+            $.ajax({
+                url: "/rotate_pages",
+                type: "POST",
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    $('#rotate-result').html('<a href="data:application/pdf;base64,' + response + '" download="rotated_output.pdf">Download Rotated PDF</a>');
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        }
+
+        // Function to handle merging PDFs
+        function mergePdfs() {
+            const files = document.getElementById('merge-pdfs-file').files;
+            const outputFilename = document.getElementById('output-filename').value;
+
+            if (files.length < 2 || !outputFilename) {
+                return alert("Please select at least two files and provide an output filename");
+            }
+
+            const formData = new FormData();
+            for (let i = 0; i < files.length; i++) {
+                formData.append('pdf_files', files[i]);
+            }
+            formData.append('output_filename', outputFilename);
+
+            $.ajax({
+                url: "/merge_pdfs",
+                type: "POST",
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    $('#merge-result').html('<a href="data:application/pdf;base64,' + response + '" download="' + outputFilename + '">Download Merged PDF</a>');
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        }
     </script>
 </body>
 </html>
