@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PDF Tools</title>
-    <link rel="stylesheet" href="styles.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         body {
@@ -111,7 +110,7 @@
         <h2>Count Pages</h2>
         <form id="countPagesForm" enctype="multipart/form-data">
             <div class="form-group">
-                <input type="file" name="pdf_files" multiple>
+                <input type="file" name="pdf_files" multiple required>
             </div>
             <button type="submit">Count Pages</button>
         </form>
@@ -137,7 +136,7 @@
         <h2>Merge PDFs</h2>
         <form id="mergeForm" enctype="multipart/form-data">
             <div class="form-group">
-                <input type="file" name="pdf_files" multiple>
+                <input type="file" name="pdf_files" multiple required>
             </div>
             <button type="submit">Merge</button>
         </form>
@@ -185,16 +184,17 @@
                     contentType: false,
                     processData: false,
                     success: function(response) {
-                        // File is downloaded directly
+                        // Directly download the file
+                        const url = window.URL.createObjectURL(new Blob([response]));
                         const a = document.createElement('a');
-                        a.href = response.file;
-                        a.download = "rotated_output.pdf";
+                        a.href = url;
+                        a.download = 'rotated_output.pdf';
                         document.body.appendChild(a);
                         a.click();
                         a.remove();
                     },
                     error: function(response) {
-                        $('#rotateResult').html('Error: ' + response.responseJSON.error).show();  // Show error message
+                        $('#rotateResult').html('Error: ' + response.responseJSON.error).show();
                     }
                 });
             });
@@ -211,16 +211,17 @@
                     contentType: false,
                     processData: false,
                     success: function(response) {
-                        // File is downloaded directly
+                        // Directly download the file
+                        const url = window.URL.createObjectURL(new Blob([response]));
                         const a = document.createElement('a');
-                        a.href = response.file;
-                        a.download = "merged_output.pdf";
+                        a.href = url;
+                        a.download = 'merged_output.pdf';
                         document.body.appendChild(a);
                         a.click();
                         a.remove();
                     },
                     error: function(response) {
-                        $('#mergeResult').html('Error: ' + response.responseJSON.error).show();  // Show error message
+                        $('#mergeResult').html('Error: ' + response.responseJSON.error).show();
                     }
                 });
             });
