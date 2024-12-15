@@ -3,127 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Utilities</title>
-    <link rel="stylesheet" href="style.css">
+    <title>PDF Tools</title>
+    <link rel="stylesheet" href="styles.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px 10px;
+            text-align: center;
+            font-size: 24px;
+            box-shadow: 0 0 20px rgba(0, 123, 255, 0.5);
+            margin-bottom: 20px;
+        }
+
+        main {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #121212;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            font-size: 28px;
+            margin: 20px 0;
+            color: #007bff;
+        }
+
+        h2 {
+            font-size: 20px;
+            margin: 20px 0;
+            color: #007bff;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+
+        input[type="file"], input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #2a2a2a;
+            color: #e0e0e0;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.4);
+            margin: 10px 0;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.7);
+        }
+
+        .message {
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #333333;
+            color: #007bff;
+            font-size: 14px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #888;
+        }
+    </style>
 </head>
 <body>
+    <header>
+        PDF Tools
+    </header>
+    <main>
+        <h1>Work with your PDFs here!</h1>
 
-    <div class="container">
-        <h1>PDF Utilities</h1>
+        <h2>Count Pages</h2>
+        <form id="countPagesForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <input type="file" name="pdf_files" multiple>
+            </div>
+            <button type="submit">Count Pages</button>
+        </form>
+        <div id="countResult" class="message" style="display:none;"></div>
 
-        <!-- Count Pages Section -->
-        <div class="form-container">
-            <h3>Count Pages</h3>
-            <input type="file" id="count-pages-file" class="file-input" />
-            <button class="btn" onclick="countPages()">Count Pages</button>
-            <div id="page-count-result" class="result"></div>
-        </div>
+        <h2>Rotate Pages</h2>
+        <form id="rotateForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <input type="file" name="pdf_file" required>
+            </div>
+            <div class="form-group">
+                <label for="angle">Enter Rotation Angle</label>
+                <input type="number" name="angle" required>
+            </div>
+            <div class="form-group">
+                <label for="pages">Pages to Rotate (e.g., 1,2,3-5)</label>
+                <input type="text" name="pages" required>
+            </div>
+            <button type="submit">Rotate</button>
+        </form>
+        <div id="rotateResult" class="message" style="display:none;"></div>
 
-        <!-- Rotate Pages Section -->
-        <div class="form-container">
-            <h3>Rotate Pages</h3>
-            <input type="file" id="rotate-pages-file" class="file-input" />
-            <input type="text" id="pages-to-rotate" class="input-field" placeholder="Pages to rotate (comma-separated)" />
-            <input type="number" id="rotation-degree" class="input-field" placeholder="Rotation degree (90, 180, 270)" />
-            <button class="btn" onclick="rotatePages()">Rotate Pages</button>
-            <div id="rotate-result" class="result"></div>
-        </div>
-
-        <!-- Merge PDFs Section -->
-        <div class="form-container">
-            <h3>Merge PDFs</h3>
-            <input type="file" id="merge-pdfs-file" class="file-input" multiple />
-            <input type="text" id="output-filename" class="input-field" placeholder="Output Filename" />
-            <button class="btn" onclick="mergePdfs()">Merge PDFs</button>
-            <div id="merge-result" class="result"></div>
-        </div>
-    </div>
+        <h2>Merge PDFs</h2>
+        <form id="mergeForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <input type="file" name="pdf_files" multiple>
+            </div>
+            <button type="submit">Merge</button>
+        </form>
+        <div id="mergeResult" class="message" style="display:none;"></div>
+    </main>
+    <footer>
+        &copy; PDF Tools! All rights reserved :)
+    </footer>
 
     <script>
-        // Function to handle counting pages
-        function countPages() {
-            const file = document.getElementById('count-pages-file').files[0];
-            if (!file) return alert("Please select a PDF file");
-
-            const formData = new FormData();
-            formData.append("pdf_file", file);
-
-            $.ajax({
-                url: "/count_pages",
-                type: "POST",
-                data: formData,
-                contentType: false,
-                processData: false,
-                success: function(response) {
-                    $('#page-count-result').html(response);
-                },
-                error: function(error) {
-                    console.log(error);
-                }
+        $(document).ready(function() {
+            // Handle count pages
+            $('#countPagesForm').submit(function(e) {
+                e.preventDefault();
+                let formData = new FormData(this);
+                $('#countResult').hide();  // Hide result box before submitting
+                $.ajax({
+                    url: '/count_pages',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(response) {
+                        let message = '';
+                        if (response.results && response.results.length > 0) {
+                            message = response.results.join('<br>');
+                        }
+                        $('#countResult').html(message).show();  // Show result after receiving it
+                    },
+                    error: function(response) {
+                        $('#countResult').html('Error: ' + response.responseJSON.error).show();  // Show error message
+                    }
+                });
             });
-        }
 
-        // Function to handle rotating pages
-        function rotatePages() {
-            const file = document.getElementById('rotate-pages-file').files[0];
-            const pagesToRotate = document.getElementById('pages-to-rotate').value;
-            const rotationDegree = document.getElementById('rotation-degree').value;
-
-            if (!file || !pagesToRotate || !rotationDegree) {
-                return alert("Please fill in all fields");
-            }
-
-            const formData = new FormData();
-            formData.append("pdf_file", file);
-            formData.append("pages_to_rotate", pagesToRotate);
-            formData.append("rotation_degree", rotationDegree);
-
-            $.ajax({
-                url: "/rotate_pages",
-                type: "POST",
-                data: formData,
-                contentType: false,
-                processData: false,
-                success: function(response) {
-                    $('#rotate-result').html('<a href="' + response + '" download="rotated_output.pdf">Download Rotated PDF</a>');
-                },
-                error: function(error) {
-                    console.log(error);
-                }
+            // Handle rotate pages
+            $('#rotateForm').submit(function(e) {
+                e.preventDefault();
+                let formData = new FormData(this);
+                $('#rotateResult').hide();  // Hide result box before submitting
+                $.ajax({
+                    url: '/rotate_page',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(response) {
+                        // File is downloaded directly
+                        const a = document.createElement('a');
+                        a.href = response.file;
+                        a.download = "rotated_output.pdf";
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                    },
+                    error: function(response) {
+                        $('#rotateResult').html('Error: ' + response.responseJSON.error).show();  // Show error message
+                    }
+                });
             });
-        }
 
-        // Function to handle merging PDFs
-        function mergePdfs() {
-            const files = document.getElementById('merge-pdfs-file').files;
-            const outputFilename = document.getElementById('output-filename').value;
-
-            if (files.length < 2 || !outputFilename) {
-                return alert("Please select at least two files and provide an output filename");
-            }
-
-            const formData = new FormData();
-            for (let i = 0; i < files.length; i++) {
-                formData.append('pdf_files', files[i]);
-            }
-            formData.append('output_filename', outputFilename);
-
-            $.ajax({
-                url: "/merge_pdfs",
-                type: "POST",
-                data: formData,
-                contentType: false,
-                processData: false,
-                success: function(response) {
-                    $('#merge-result').html('<a href="' + response + '" download="' + outputFilename + '">Download Merged PDF</a>');
-                },
-                error: function(error) {
-                    console.log(error);
-                }
+            // Handle merge PDFs
+            $('#mergeForm').submit(function(e) {
+                e.preventDefault();
+                let formData = new FormData(this);
+                $('#mergeResult').hide();  // Hide result box before submitting
+                $.ajax({
+                    url: '/merge_pdfs',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(response) {
+                        // File is downloaded directly
+                        const a = document.createElement('a');
+                        a.href = response.file;
+                        a.download = "merged_output.pdf";
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                    },
+                    error: function(response) {
+                        $('#mergeResult').html('Error: ' + response.responseJSON.error).show();  // Show error message
+                    }
+                });
             });
-        }
+        });
     </script>
-
 </body>
 </html>
