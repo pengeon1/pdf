@@ -4,43 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PDF Utilities</title>
+    <link rel="stylesheet" href="style.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        h1 { color: #333; }
-        .container { margin-top: 20px; }
-        .form-group { margin-bottom: 20px; }
-        .output { margin-top: 20px; }
-        .file-input { margin-bottom: 10px; }
-        .btn { padding: 10px 15px; background-color: #007bff; color: white; border: none; cursor: pointer; }
-        .btn:hover { background-color: #0056b3; }
-    </style>
 </head>
 <body>
-    <h1>PDF Utilities</h1>
+
     <div class="container">
-        <div class="form-group">
+        <h1>PDF Utilities</h1>
+
+        <!-- Count Pages Section -->
+        <div class="form-container">
             <h3>Count Pages</h3>
             <input type="file" id="count-pages-file" class="file-input" />
             <button class="btn" onclick="countPages()">Count Pages</button>
-            <div id="page-count-result"></div>
+            <div id="page-count-result" class="result"></div>
         </div>
 
-        <div class="form-group">
+        <!-- Rotate Pages Section -->
+        <div class="form-container">
             <h3>Rotate Pages</h3>
             <input type="file" id="rotate-pages-file" class="file-input" />
-            <input type="text" id="pages-to-rotate" placeholder="Pages to rotate (comma-separated)" />
-            <input type="number" id="rotation-degree" placeholder="Rotation degree (90, 180, 270)" />
+            <input type="text" id="pages-to-rotate" class="input-field" placeholder="Pages to rotate (comma-separated)" />
+            <input type="number" id="rotation-degree" class="input-field" placeholder="Rotation degree (90, 180, 270)" />
             <button class="btn" onclick="rotatePages()">Rotate Pages</button>
-            <div id="rotate-result"></div>
+            <div id="rotate-result" class="result"></div>
         </div>
 
-        <div class="form-group">
+        <!-- Merge PDFs Section -->
+        <div class="form-container">
             <h3>Merge PDFs</h3>
             <input type="file" id="merge-pdfs-file" class="file-input" multiple />
-            <input type="text" id="output-filename" placeholder="Output Filename" />
+            <input type="text" id="output-filename" class="input-field" placeholder="Output Filename" />
             <button class="btn" onclick="mergePdfs()">Merge PDFs</button>
-            <div id="merge-result"></div>
+            <div id="merge-result" class="result"></div>
         </div>
     </div>
 
@@ -90,7 +86,7 @@
                 contentType: false,
                 processData: false,
                 success: function(response) {
-                    $('#rotate-result').html('<a href="data:application/pdf;base64,' + response + '" download="rotated_output.pdf">Download Rotated PDF</a>');
+                    $('#rotate-result').html('<a href="' + response + '" download="rotated_output.pdf">Download Rotated PDF</a>');
                 },
                 error: function(error) {
                     console.log(error);
@@ -120,7 +116,7 @@
                 contentType: false,
                 processData: false,
                 success: function(response) {
-                    $('#merge-result').html('<a href="data:application/pdf;base64,' + response + '" download="' + outputFilename + '">Download Merged PDF</a>');
+                    $('#merge-result').html('<a href="' + response + '" download="' + outputFilename + '">Download Merged PDF</a>');
                 },
                 error: function(error) {
                     console.log(error);
@@ -128,5 +124,6 @@
             });
         }
     </script>
+
 </body>
 </html>
