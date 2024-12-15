@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PDF Tools</title>
-    <link rel="stylesheet" href="styles.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        /* Same styles as you had before */
+        /* Your existing CSS styles */
     </style>
 </head>
 <body>
@@ -94,7 +93,7 @@
                     contentType: false,
                     processData: false,
                     success: function(response) {
-                        const blob = new Blob([response], { type: 'application/pdf' });
+                        const blob = new Blob([response.data], { type: 'application/pdf' });
                         const link = document.createElement('a');
                         link.href = URL.createObjectURL(blob);
                         link.download = 'rotated_output.pdf';
@@ -118,7 +117,7 @@
                     contentType: false,
                     processData: false,
                     success: function(response) {
-                        const blob = new Blob([response], { type: 'application/pdf' });
+                        const blob = new Blob([response.data], { type: 'application/pdf' });
                         const link = document.createElement('a');
                         link.href = URL.createObjectURL(blob);
                         link.download = 'merged_output.pdf';
