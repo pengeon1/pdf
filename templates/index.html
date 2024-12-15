@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PDF Tools</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -58,19 +58,13 @@
         }
 
         input[type="file"], input[type="number"], input[type="text"] {
-            width: 97%;
+            width: 100%;
             padding: 10px;
             margin-bottom: 10px;
             border: 1px solid #444;
             border-radius: 4px;
             background-color: #2a2a2a;
             color: #e0e0e0;
-        }
-
-        input[type="file"]:focus, input[type="number"], input[type="text"]:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 10px rgba(0, 123, 255, 0.7);
         }
 
         button {
@@ -105,40 +99,6 @@
             font-size: 14px;
             color: #888;
         }
-
-        .social-buttons button {
-            margin: 5px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            box-shadow: 0 0 5px rgba(0, 123, 255, 0.4);
-        }
-
-        .social-buttons button:hover {
-            background-color: #0056b3;
-            box-shadow: 0 0 10px rgba(0, 123, 255, 0.7);
-        }
-
-        .social-buttons button:nth-child(2) {
-            background-color: #007bff;
-        }
-
-        .social-buttons button:nth-child(2):hover {
-            background-color: #0056b3;
-            box-shadow: 0 0 10px rgba(0, 123, 255, 0.6);
-        }
-
-        .social-buttons {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-        }
-
-        .spacer {
-            margin-bottom: 20px;
-        }
     </style>
 </head>
 <body>
@@ -146,66 +106,125 @@
         PDF Tools
     </header>
     <main>
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="message">
-                    {% for message in messages %}
-                        <p>{{ message|safe }}</p>
-                        <div class="spacer"></div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-        <div class="spacer"></div>
         <h1>Work with your PDFs here!</h1>
-        <div class="spacer"></div>
 
-        <!-- Count Pages Form -->
         <h2>Count Pages</h2>
-        <form action="/count_pages" method="post" enctype="multipart/form-data">
+        <form id="countPagesForm" enctype="multipart/form-data">
             <div class="form-group">
                 <input type="file" name="pdf_files" multiple>
             </div>
-            <button type="submit">Count</button>
+            <button type="submit">Count Pages</button>
         </form>
-        <div class="spacer"></div>
+        <div id="countResult" class="message" style="display:none;"></div>
 
-        <!-- Rotate Page Form -->
-        <h2>Rotate Page</h2>
-        <form action="/rotate_page" method="post" enctype="multipart/form-data">
+        <h2>Rotate Pages</h2>
+        <form id="rotateForm" enctype="multipart/form-data">
             <div class="form-group">
                 <input type="file" name="pdf_file" required>
             </div>
             <div class="form-group">
-                <label for="angle">Enter Rotation Angle (multiple of 90)</label>
+                <label for="angle">Enter Rotation Angle</label>
                 <input type="number" name="angle" required>
             </div>
             <div class="form-group">
-                <label for="pages">Enter Page Numbers or Range (e.g. 1, 3-5)</label>
+                <label for="pages">Pages to Rotate (e.g., 1,2,3-5)</label>
                 <input type="text" name="pages" required>
             </div>
             <button type="submit">Rotate</button>
         </form>
-        <div class="spacer"></div>
+        <div id="rotateResult" class="message" style="display:none;"></div>
 
-        <!-- Merge PDFs Form -->
         <h2>Merge PDFs</h2>
-        <form action="/merge_pdfs" method="post" enctype="multipart/form-data">
+        <form id="mergeForm" enctype="multipart/form-data">
             <div class="form-group">
                 <input type="file" name="pdf_files" multiple>
             </div>
             <button type="submit">Merge</button>
         </form>
-        <div class="spacer"></div>
-
-        <!-- Social Links -->
-        <div class="social-buttons">
-            <button onclick="window.open('https://github.com/vvvv5215', '_blank')">GitHub</button>
-            <button onclick="window.open('https://www.linkedin.com/in/vishwanth-venkatasubramanian-38a731318/', '_blank')">LinkedIn</button>
-        </div>
+        <div id="mergeResult" class="message" style="display:none;"></div>
     </main>
     <footer>
         &copy; PDF Tools! All rights reserved :)
     </footer>
+
+    <script>
+        $(document).ready(function() {
+            // Handle count pages
+            $('#countPagesForm').submit(function(e) {
+                e.preventDefault();
+                let formData = new FormData(this);
+                $('#countResult').hide();  // Hide result box before submitting
+                $.ajax({
+                    url: '/count_pages',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(response) {
+                        let message = '';
+                        if (response.results && response.results.length > 0) {
+                            message = response.results.join('<br>');
+                        }
+                        $('#countResult').html(message).show();  // Show result after receiving it
+                    },
+                    error: function(response) {
+                        $('#countResult').html('Error: ' + response.responseJSON.error).show();  // Show error message
+                    }
+                });
+            });
+
+            // Handle rotate pages
+            $('#rotateForm').submit(function(e) {
+                e.preventDefault();
+                let formData = new FormData(this);
+                $('#rotateResult').hide();  // Hide result box before submitting
+                $.ajax({
+                    url: '/rotate_page',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(response) {
+                        // File is downloaded directly
+                        const a = document.createElement('a');
+                        a.href = response.file;
+                        a.download = "rotated_output.pdf";
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                    },
+                    error: function(response) {
+                        $('#rotateResult').html('Error: ' + response.responseJSON.error).show();  // Show error message
+                    }
+                });
+            });
+
+            // Handle merge PDFs
+            $('#mergeForm').submit(function(e) {
+                e.preventDefault();
+                let formData = new FormData(this);
+                $('#mergeResult').hide();  // Hide result box before submitting
+                $.ajax({
+                    url: '/merge_pdfs',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(response) {
+                        // File is downloaded directly
+                        const a = document.createElement('a');
+                        a.href = response.file;
+                        a.download = "merged_output.pdf";
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                    },
+                    error: function(response) {
+                        $('#mergeResult').html('Error: ' + response.responseJSON.error).show();  // Show error message
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
