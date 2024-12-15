@@ -152,7 +152,7 @@
             $('#countPagesForm').submit(function(e) {
                 e.preventDefault();
                 let formData = new FormData(this);
-                $('#countResult').hide();  // Hide result box before submitting
+                $('#countResult').hide();
                 $.ajax({
                     url: '/count_pages',
                     type: 'POST',
@@ -164,10 +164,10 @@
                         if (response.results && response.results.length > 0) {
                             message = response.results.join('<br>');
                         }
-                        $('#countResult').html(message).show();  // Show result after receiving it
+                        $('#countResult').html(message).show();
                     },
                     error: function(response) {
-                        $('#countResult').html('Error: ' + response.responseJSON.error).show();  // Show error message
+                        $('#countResult').html('Error: ' + response.responseJSON.error).show();
                     }
                 });
             });
@@ -176,7 +176,7 @@
             $('#rotateForm').submit(function(e) {
                 e.preventDefault();
                 let formData = new FormData(this);
-                $('#rotateResult').hide();  // Hide result box before submitting
+                $('#rotateResult').hide();
                 $.ajax({
                     url: '/rotate_page',
                     type: 'POST',
@@ -184,14 +184,11 @@
                     contentType: false,
                     processData: false,
                     success: function(response) {
-                        // Directly download the file
-                        const url = window.URL.createObjectURL(new Blob([response]));
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = 'rotated_output.pdf';
-                        document.body.appendChild(a);
-                        a.click();
-                        a.remove();
+                        const blob = new Blob([response], { type: 'application/pdf' });
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = 'rotated_output.pdf';
+                        link.click();
                     },
                     error: function(response) {
                         $('#rotateResult').html('Error: ' + response.responseJSON.error).show();
@@ -203,7 +200,7 @@
             $('#mergeForm').submit(function(e) {
                 e.preventDefault();
                 let formData = new FormData(this);
-                $('#mergeResult').hide();  // Hide result box before submitting
+                $('#mergeResult').hide();
                 $.ajax({
                     url: '/merge_pdfs',
                     type: 'POST',
@@ -211,14 +208,11 @@
                     contentType: false,
                     processData: false,
                     success: function(response) {
-                        // Directly download the file
-                        const url = window.URL.createObjectURL(new Blob([response]));
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = 'merged_output.pdf';
-                        document.body.appendChild(a);
-                        a.click();
-                        a.remove();
+                        const blob = new Blob([response], { type: 'application/pdf' });
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = 'merged_output.pdf';
+                        link.click();
                     },
                     error: function(response) {
                         $('#mergeResult').html('Error: ' + response.responseJSON.error).show();
