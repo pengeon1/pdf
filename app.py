@@ -39,7 +39,7 @@ def rotate_page():
         reader = PdfReader(pdf_file)
         writer = PdfWriter()
 
-        # Iterate over the pages and rotate selected ones
+        # Rotate pages and add them to the writer
         for i, page in enumerate(reader.pages):
             if i in page_numbers:
                 page.rotate(angle)  # Rotate the page
