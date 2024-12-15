@@ -1,91 +1,70 @@
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, request, render_template, send_file
 from PyPDF2 import PdfReader, PdfWriter
-import io
+import os
+from io import BytesIO
 
 app = Flask(__name__)
+UPLOAD_FOLDER = 'uploads/pdfs/'
+MERGED_FOLDER = 'merged_pdfs/'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(MERGED_FOLDER, exist_ok=True)
 
+# Route to serve the index.html
 @app.route('/')
 def index():
     return render_template('index.html')
 
+# Route to count the number of pages in a PDF
 @app.route('/count_pages', methods=['POST'])
 def count_pages():
-    pdf_files = request.files.getlist('pdf_files')  # Handle multiple files
-    results = []
-    
-    try:
-        for pdf_file in pdf_files:
-            # Read the PDF
-            reader = PdfReader(pdf_file)
-            num_pages = len(reader.pages)
-            results.append(f"File: {pdf_file.filename} has {num_pages} pages.")
-        
-        # Return results as a JSON response
-        return jsonify({'results': results})
-    except Exception as e:
-        return jsonify({'error': f'Error: {str(e)}'}), 400
-
-@app.route('/rotate_page', methods=['POST'])
-def rotate_page():
     pdf_file = request.files['pdf_file']
-    angle = int(request.form['angle'])
-    pages = request.form['pages']
-    
-    try:
-        # Parse page numbers input
-        page_numbers = parse_page_numbers(pages)
+    pdf_reader = PdfReader(pdf_file)
+    page_count = len(pdf_reader.pages)
+    return f"Page count: {page_count}"
 
-        # Read the input PDF and prepare a writer
-        reader = PdfReader(pdf_file)
-        writer = PdfWriter()
+# Route to rotate specific pages in a PDF
+@app.route('/rotate_pages', methods=['POST'])
+def rotate_pages():
+    pdf_file = request.files['pdf_file']
+    pages_to_rotate = request.form.get('pages_to_rotate')  # Pages as a comma-separated list
+    rotation_degree = int(request.form.get('rotation_degree'))  # Degree of rotation: 90, 180, 270
 
-        # Rotate pages and add them to the writer
-        for i, page in enumerate(reader.pages):
-            if i in page_numbers:
-                page.rotate(angle)  # Rotate the page
-            writer.add_page(page)
+    pdf_reader = PdfReader(pdf_file)
+    pdf_writer = PdfWriter()
 
-        # Write the output PDF to a byte stream (in-memory)
-        output_pdf_stream = io.BytesIO()
-        writer.write(output_pdf_stream)
-        output_pdf_stream.seek(0)  # Reset stream position for downloading
+    pages_to_rotate = [int(page) - 1 for page in pages_to_rotate.split(',')]  # Convert to 0-based indexing
 
-        # Return the output PDF as a file download
-        return send_file(output_pdf_stream, as_attachment=True, download_name="rotated_output.pdf", mimetype='application/pdf')
-    except Exception as e:
-        return jsonify({'error': f'Error: {str(e)}'}), 400
+    for i, page in enumerate(pdf_reader.pages):
+        if i in pages_to_rotate:
+            page.rotate_clockwise(rotation_degree)
+        pdf_writer.add_page(page)
 
+    # Saving rotated PDF to memory (instead of a file)
+    output_pdf = BytesIO()
+    pdf_writer.write(output_pdf)
+    output_pdf.seek(0)
+
+    return send_file(output_pdf, as_attachment=True, download_name="rotated_output.pdf", mimetype='application/pdf')
+
+# Route to merge multiple PDFs
 @app.route('/merge_pdfs', methods=['POST'])
 def merge_pdfs():
-    files = request.files.getlist('pdf_files')
-    writer = PdfWriter()
-    
-    try:
-        # Merge all PDF files
-        for pdf in files:
-            reader = PdfReader(pdf)
-            for page in reader.pages:
-                writer.add_page(page)
+    files = request.files.getlist('pdf_files')  # List of PDF files
+    output_filename = request.form.get('output_filename', 'merged_output.pdf')
 
-        # Write the output PDF to a byte stream (in-memory)
-        output_pdf_stream = io.BytesIO()
-        writer.write(output_pdf_stream)
-        output_pdf_stream.seek(0)  # Reset stream position for downloading
+    pdf_writer = PdfWriter()
 
-        # Return the merged PDF as a file download
-        return send_file(output_pdf_stream, as_attachment=True, download_name="merged_output.pdf", mimetype='application/pdf')
-    except Exception as e:
-        return jsonify({'error': f'Error: {str(e)}'}), 400
+    for file in files:
+        pdf_reader = PdfReader(file)
+        for page in pdf_reader.pages:
+            pdf_writer.add_page(page)
 
-def parse_page_numbers(pages):
-    page_numbers = set()
-    for part in pages.split(','):
-        if '-' in part:
-            start, end = map(int, part.split('-'))
-            page_numbers.update(range(start-1, end))
-        else:
-            page_numbers.add(int(part)-1)
-    return page_numbers
+    # Saving merged PDF to memory
+    output_pdf = BytesIO()
+    pdf_writer.write(output_pdf)
+    output_pdf.seek(0)
+
+    return send_file(output_pdf, as_attachment=True, download_name=output_filename, mimetype='application/pdf')
 
 if __name__ == '__main__':
     app.run(debug=True)
