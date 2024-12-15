@@ -41,7 +41,7 @@ def rotate_page():
 
         for i, page in enumerate(reader.pages):
             if i in page_numbers:
-                page.rotate(angle)
+                page.rotate(angle)  # Rotate the page if it's in the selected list
             writer.add_page(page)
 
         # Write the output to an in-memory stream (instead of saving to disk)
