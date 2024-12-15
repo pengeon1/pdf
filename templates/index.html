@@ -153,9 +153,9 @@
             $('#countPagesForm').submit(function(e) {
                 e.preventDefault();
                 let formData = new FormData(this);
-                $('#countResult').hide();  // Hide result box before submitting
+                $('#countResult').hide(); // Hide result box before submitting
                 $.ajax({
-                    url: '/count_pages',
+                    url: '/count_pages', // Correct endpoint
                     type: 'POST',
                     data: formData,
                     contentType: false,
@@ -165,66 +165,78 @@
                         if (response.results && response.results.length > 0) {
                             message = response.results.join('<br>');
                         }
-                        $('#countResult').html(message).show();  // Show result after receiving it
+                        $('#countResult').html(message).show(); // Show result after receiving it
                     },
                     error: function(response) {
-                        $('#countResult').html('Error: ' + response.responseJSON.error).show();  // Show error message
+                        $('#countResult').html('Error: ' + response.responseJSON.error).show(); // Show error message
                     }
                 });
             });
-
+    
             // Handle rotate pages
-            $('#rotateForm').submit(function(e) {
+            $('#rotateForm').submit(function (e) {
                 e.preventDefault();
                 let formData = new FormData(this);
-                $('#rotateResult').hide();  // Hide result box before submitting
                 $.ajax({
                     url: '/rotate_page',
                     type: 'POST',
                     data: formData,
                     contentType: false,
                     processData: false,
-                    success: function(response) {
-                        // File is downloaded directly
+                    xhrFields: {
+                        responseType: 'blob'  // Expect a binary file
+                    },
+                    success: function (response) {
+                        const blob = new Blob([response], { type: 'application/pdf' });
+                        const url = window.URL.createObjectURL(blob);
                         const a = document.createElement('a');
-                        a.href = response.file;
-                        a.download = "rotated_output.pdf";
+                        a.href = url;
+                        a.download = 'rotated_output.pdf';
                         document.body.appendChild(a);
                         a.click();
-                        a.remove();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+                        alert('Your rotated PDF has been downloaded successfully!');
                     },
-                    error: function(response) {
-                        $('#rotateResult').html('Error: ' + response.responseJSON.error).show();  // Show error message
+                    error: function (response) {
+                        $('#rotateResult').html('Error: ' + response.responseJSON.error).show();
                     }
                 });
             });
 
+    
             // Handle merge PDFs
-            $('#mergeForm').submit(function(e) {
+            $('#mergeForm').submit(function (e) {
                 e.preventDefault();
                 let formData = new FormData(this);
-                $('#mergeResult').hide();  // Hide result box before submitting
                 $.ajax({
                     url: '/merge_pdfs',
                     type: 'POST',
                     data: formData,
                     contentType: false,
                     processData: false,
-                    success: function(response) {
-                        // File is downloaded directly
+                    xhrFields: {
+                        responseType: 'blob'  // Expect a binary file
+                    },
+                    success: function (response) {
+                        const blob = new Blob([response], { type: 'application/pdf' });
+                        const url = window.URL.createObjectURL(blob);
                         const a = document.createElement('a');
-                        a.href = response.file;
-                        a.download = "merged_output.pdf";
+                        a.href = url;
+                        a.download = 'merged_output.pdf';
                         document.body.appendChild(a);
                         a.click();
-                        a.remove();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+                        alert('Your merged PDF has been downloaded successfully!');
                     },
-                    error: function(response) {
-                        $('#mergeResult').html('Error: ' + response.responseJSON.error).show();  // Show error message
+                    error: function (response) {
+                        $('#mergeResult').html('Error: ' + response.responseJSON.error).show();
                     }
                 });
             });
         });
     </script>
+    
 </body>
 </html>
