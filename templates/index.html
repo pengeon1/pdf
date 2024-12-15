@@ -3,46 +3,215 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Utilities</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>PDF Tools</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+
+        header {
+            background-color: #6c0cfe;
+            color: white;
+            padding: 20px 10px;
+            text-align: center;
+            font-size: 24px;
+            box-shadow: 0 0 7px rgba(0, 123, 255, 0.5);
+            margin-bottom: 20px;
+        }
+
+        main {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #121212;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            font-size: 28px;
+            margin: 20px 0;
+            color: #6c0cfe;
+        }
+
+        h2 {
+            font-size: 20px;
+            margin: 20px 0;
+            color: #6c0cfe;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+
+        input[type="file"], input[type="number"], input[type="text"] {
+            width: 97%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #2a2a2a;
+            color: #e0e0e0;
+        }
+
+        input[type="file"]:focus, input[type="number"]:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #6c0cfe;
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.7);
+        }
+
+        button {
+            background-color: #6c0cfe;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.4);
+            margin: 10px 0;
+        }
+
+        button:hover {
+            background-color: #5900dd;
+            box-shadow: 0 0 6px rgba(0, 123, 255, 0.7);
+        }
+
+        .message {
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #333333;
+            color: #007bff;
+            font-size: 14px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #888;
+        }
+
+        .social-buttons button {
+            margin: 5px;
+            background-color: #6c0cfe;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.4);
+        }
+
+        .social-buttons button:hover {
+            background-color: #5900dd;
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.7);
+        }
+
+        .social-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .spacer {
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
-    <h1>PDF Utilities</h1>
-    
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul>
-                {% for message in messages %}
-                    <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-    
-    <h2>Count Pages</h2>
-    <form action="/count_pages" method="post" enctype="multipart/form-data">
-        <input type="file" name="pdf_files" multiple>
-        <button type="submit">Count Pages</button>
-    </form>
+    <header>
+        PDF Tools
+    </header>
+    <main>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="message">
+                    {% for message in messages %}
+                        <p>{{ message|safe }}</p>
+                        <div class="spacer"></div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        <div class="spacer"></div>
+        <h1>Work with your PDFs here!</h1>
+        <div class="spacer"></div>
+        <h2>Count Pages</h2>
+        <form action="/count_pages" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <input type="file" name="pdf_files" multiple>
+            </div>
+            <button type="submit">Count</button>
+        </form>
+        <div class="spacer"></div>
+        <h2>Rotate Pages</h2>
+        <form action="/rotate_page" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <input type="file" name="pdf_file" required>
+            </div>
+            <div class="form-group">
+                <label for="angle">Enter Rotation Angle</label>
+                <input type="number" name="angle" required>
+            </div>
+            <div class="form-group">
+                <label for="pages">Enter Page Numbers (e.g., 1,3-5,7)</label>
+                <input type="text" name="pages" required>
+            </div>
+            <button type="submit">Rotate</button>
+        </form>
+        <div class="spacer"></div>
+        <h2>Merge PDFs</h2>
+        <form action="/merge_pdfs" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <input type="file" name="pdf_files" multiple>
+            </div>
+            <button type="submit">Merge</button>
+        </form>
+        <div class="spacer"></div>
+        <div class="social-buttons">
+            <button onclick="window.open('https://github.com/vvvv5215', '_blank')">GitHub</button>
+            <button onclick="window.open('https://www.linkedin.com/in/vishwanth-venkatasubramanian-38a731318/', '_blank')">LinkedIn</button>
+        </div>
+    </main>
+    <footer>
+        &copy; PDF Tools! All rights reserved :) 
+    </footer>
 
-    <h2>Rotate Page</h2>
-    <form action="/rotate_page" method="post" enctype="multipart/form-data">
-        <input type="file" name="pdf_file" required>
-        <label for="angle">Enter rotation angle:</label>
-        <input type="number" name="angle" required>
-        <label for="page">Which page to rotate?</label>
-        <input type="number" name="page" required>
-        <button type="submit">Rotate Page</button>
-    </form>
+    <script>
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function () {
+                document.getElementById('loadingSpinner').style.display = 'block';
+            });
+        });
 
-    <h2>Merge PDFs</h2>
-    <form action="/merge_pdfs" method="post" enctype="multipart/form-data">
-        <input type="file" name="pdf_files" multiple>
-        <button type="submit">Merge PDFs</button>
-    </form>
+        // Validate page input format (e.g., "1, 3-5, 7")
+        document.querySelector('form[action="/rotate_page"]').addEventListener('submit', function (event) {
+            const pagesInput = document.querySelector('[name="pages"]').value.trim();
+            const pageRanges = pagesInput.split(',');
+            const validPagePattern = /^[0-9]+(-[0-9]+)?$/;
 
-    <h2>Social Media</h2>
-    <button onclick="window.open('https://github.com/vvvv5215', '_blank')">GitHub</button>
-    <button onclick="window.open('https://www.linkedin.com/in/vishwanth-venkatasubramanian-38a731318/', '_blank')">LinkedIn</button>
+            for (let range of pageRanges) {
+                if (!validPagePattern.test(range)) {
+                    alert("Invalid page range format. Use '1,3-5,7' for example.");
+                    event.preventDefault();
+                    return;
+                }
+            }
+        });
+    </script>
 </body>
 </html>
