@@ -12,14 +12,14 @@ def index():
 def count_pages():
     pdf_files = request.files.getlist('pdf_files')  # Handle multiple files
     results = []
-    
+
     try:
         for pdf_file in pdf_files:
             # Read the PDF
             reader = PdfReader(pdf_file)
             num_pages = len(reader.pages)
             results.append(f"File: {pdf_file.filename} has {num_pages} pages.")
-        
+
         # Return results as a list of messages
         return jsonify({'results': results})
     except Exception as e:
@@ -27,15 +27,14 @@ def count_pages():
 
 @app.route('/rotate_page', methods=['POST'])
 def rotate_page():
-    pdf_file = request.files['pdf_file']
-    angle = int(request.form['angle'])
-    pages = request.form['pages']
-    
     try:
-        # Parse page numbers input
+        pdf_file = request.files['pdf_file']
+        angle = int(request.form['angle'])
+        pages = request.form['pages']
+
+        print(f"Processing file: {pdf_file.filename}, Angle: {angle}, Pages: {pages}")
         page_numbers = parse_page_numbers(pages)
 
-        # Process PDF in memory
         reader = PdfReader(pdf_file)
         writer = PdfWriter()
 
@@ -44,14 +43,15 @@ def rotate_page():
                 page.rotate(angle)
             writer.add_page(page)
 
-        # Write the output to an in-memory stream (instead of saving to disk)
         output_pdf_stream = io.BytesIO()
         writer.write(output_pdf_stream)
-        output_pdf_stream.seek(0)  # Ensure to reset the stream position
+        output_pdf_stream.seek(0)
 
-        # Return the file for direct download (without saving to disk)
+        print(f"Rotated PDF generated. Size: {output_pdf_stream.tell()} bytes")
         return send_file(output_pdf_stream, as_attachment=True, download_name="rotated_output.pdf", mimetype='application/pdf')
+
     except Exception as e:
+        print(f"Error: {e}")
         return jsonify({'error': f'Error: {str(e)}'}), 400
 
 @app.route('/merge_pdfs', methods=['POST'])
@@ -64,24 +64,29 @@ def merge_pdfs():
             for page in reader.pages:
                 writer.add_page(page)
 
-        # Write output to an in-memory stream (instead of saving to disk)
         output_pdf_stream = io.BytesIO()
         writer.write(output_pdf_stream)
-        output_pdf_stream.seek(0)  # Ensure to reset the stream position
+        output_pdf_stream.seek(0)
 
-        # Return the file for direct download (without saving to disk)
+        print(f"Merged PDF generated. Size: {output_pdf_stream.tell()} bytes")
         return send_file(output_pdf_stream, as_attachment=True, download_name="merged_output.pdf", mimetype='application/pdf')
     except Exception as e:
+        print(f"Error: {e}")
         return jsonify({'error': f'Error: {str(e)}'}), 400
 
+
 def parse_page_numbers(pages):
+    """
+    Parse page numbers from a string like "1,2,3-5".
+    Returns a set of zero-based page indices.
+    """
     page_numbers = set()
     for part in pages.split(','):
         if '-' in part:
             start, end = map(int, part.split('-'))
-            page_numbers.update(range(start-1, end))
+            page_numbers.update(range(start - 1, end))
         else:
-            page_numbers.add(int(part)-1)
+            page_numbers.add(int(part) - 1)
     return page_numbers
 
 if __name__ == '__main__':
