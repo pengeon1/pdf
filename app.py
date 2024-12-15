@@ -20,7 +20,7 @@ def count_pages():
             num_pages = len(reader.pages)
             results.append(f"File: {pdf_file.filename} has {num_pages} pages.")
         
-        # Return results as a list of messages
+        # Return results as a JSON response
         return jsonify({'results': results})
     except Exception as e:
         return jsonify({'error': f'Error: {str(e)}'}), 400
