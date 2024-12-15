@@ -35,21 +35,22 @@ def rotate_page():
         # Parse page numbers input
         page_numbers = parse_page_numbers(pages)
 
-        # Process PDF in memory
+        # Read the input PDF and prepare a writer
         reader = PdfReader(pdf_file)
         writer = PdfWriter()
 
+        # Iterate over the pages and rotate selected ones
         for i, page in enumerate(reader.pages):
             if i in page_numbers:
-                page.rotate(angle)  # Rotate the page if it's in the selected list
+                page.rotate(angle)  # Rotate the page
             writer.add_page(page)
 
-        # Write the output to an in-memory stream (instead of saving to disk)
+        # Write the output PDF to a byte stream (in-memory)
         output_pdf_stream = io.BytesIO()
         writer.write(output_pdf_stream)
-        output_pdf_stream.seek(0)  # Ensure to reset the stream position
+        output_pdf_stream.seek(0)  # Reset stream position for downloading
 
-        # Return the file for direct download (without saving to disk)
+        # Return the output PDF as a file download
         return send_file(output_pdf_stream, as_attachment=True, download_name="rotated_output.pdf", mimetype='application/pdf')
     except Exception as e:
         return jsonify({'error': f'Error: {str(e)}'}), 400
@@ -58,18 +59,20 @@ def rotate_page():
 def merge_pdfs():
     files = request.files.getlist('pdf_files')
     writer = PdfWriter()
+    
     try:
+        # Merge all PDF files
         for pdf in files:
             reader = PdfReader(pdf)
             for page in reader.pages:
                 writer.add_page(page)
 
-        # Write output to an in-memory stream (instead of saving to disk)
+        # Write the output PDF to a byte stream (in-memory)
         output_pdf_stream = io.BytesIO()
         writer.write(output_pdf_stream)
-        output_pdf_stream.seek(0)  # Ensure to reset the stream position
+        output_pdf_stream.seek(0)  # Reset stream position for downloading
 
-        # Return the file for direct download (without saving to disk)
+        # Return the merged PDF as a file download
         return send_file(output_pdf_stream, as_attachment=True, download_name="merged_output.pdf", mimetype='application/pdf')
     except Exception as e:
         return jsonify({'error': f'Error: {str(e)}'}), 400
